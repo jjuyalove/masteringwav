@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090a0c">
+  <title>mastering.wav — 브라우저 오디오 마스터링</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="mastering.wav 홈"><span class="brand-mark">M</span><span>mastering<span>.wav</span></span></a>
+    <nav aria-label="주요 메뉴"><a href="#studio">스튜디오</a><a href="#guide">사용 방법</a></nav>
+    <div class="status"><i></i> Browser processing</div>
+  </header>
+
+  <main>
+    <section class="hero" id="studio">
+      <div class="eyebrow"><span></span> YOUR TRACK, FINISHED.</div>
+      <h1>소리의 마지막 <em>1%</em>를 완성하세요.</h1>
+      <p>복잡한 플러그인 없이, 원하는 만큼 섬세하게.<br>브라우저에서 바로 시작하는 정밀 오디오 마스터링.</p>
+    </section>
+
+    <section class="workspace" aria-label="마스터링 작업 공간">
+      <div class="upload" id="dropZone">
+        <input id="fileInput" type="file" accept="audio/wav,.wav" hidden>
+        <button class="upload-icon" id="fileButton" aria-label="WAV 파일 선택"><span>＋</span></button>
+        <div><strong id="uploadTitle">WAV 파일을 올려주세요</strong><small id="uploadMeta">드래그하거나 클릭해서 파일 선택 · 최대 500MB</small></div>
+        <button class="outline-button" id="selectButton">파일 선택</button>
+      </div>
+
+      <div class="track-panel">
+        <div class="track-head">
+          <div><small>NOW MASTERING</small><strong id="trackName">파일을 선택하면 여기에 표시됩니다</strong></div>
+          <div class="time"><b id="currentTime">00:00</b><span>/</span><span id="totalTime">00:00</span></div>
+        </div>
+        <canvas id="waveform" height="170" aria-label="오디오 파형"></canvas>
+        <div class="transport">
+          <button id="playButton" class="play" disabled aria-label="재생">▶</button>
+          <button id="restartButton" disabled aria-label="처음으로">↶</button>
+          <div class="compare" role="group" aria-label="원본과 마스터 비교">
+            <button class="active" data-mode="original">ORIGINAL</button><button data-mode="mastered" disabled>MASTERED</button>
+          </div>
+          <label class="level-match"><input id="levelMatch" type="checkbox" checked> 레벨 매칭</label>
+          <label class="volume">♩<input id="volume" type="range" min="0" max="1" value="0.8" step="0.01" aria-label="볼륨"></label>
+        </div>
+      </div>
+
+      <div class="console">
+        <aside class="preset-panel">
+          <p class="section-label">STARTING POINT</p>
+          <h2>어떤 소리를<br>원하시나요?</h2>
+          <div class="presets" id="presets">
+            <button class="active" data-preset="balanced"><span>균형 잡힌</span><small>선명하고 안정적인 밸런스</small></button>
+            <button data-preset="warm"><span>따뜻한</span><small>부드럽고 풍성한 아날로그 톤</small></button>
+            <button data-preset="punchy"><span>강렬한</span><small>단단하고 선명한 임팩트</small></button>
+            <button data-preset="open"><span>넓고 열린</span><small>공간감 있고 투명한 사운드</small></button>
+          </div>
+          <p class="local-note"><i>✓</i><span><b>안전한 로컬 처리</b><br>파일은 기기 밖으로 전송되지 않아요.</span></p>
+        </aside>
+
+        <div class="controls-panel">
+          <div class="controls-head"><div><p class="section-label">FINE TUNE</p><h2>디테일 조정</h2></div><button id="resetButton">↻ 초기화</button></div>
+          <div class="modules">
+            <div class="module">
+              <div class="module-title"><span class="module-icon">EQ</span><div><b>톤 밸런스</b><small>주파수 대역의 색감을 조절합니다</small></div></div>
+              <div class="slider-row"><label>LOW <output id="lowOut">0.0 dB</output><input id="low" type="range" min="-6" max="6" step="0.1" value="0"></label><label>MID <output id="midOut">0.0 dB</output><input id="mid" type="range" min="-6" max="6" step="0.1" value="0"></label><label>HIGH <output id="highOut">0.0 dB</output><input id="high" type="range" min="-6" max="6" step="0.1" value="0"></label></div>
+            </div>
+            <div class="module compact">
+              <div class="module-title"><span class="module-icon">↕</span><div><b>다이내믹</b><small>음량 차이를 고르게 다듬습니다</small></div></div>
+              <label class="single-slider"><span>GENTLE</span><input id="compression" type="range" min="0" max="100" value="35"><span>FIRM</span><output id="compressionOut">35%</output></label>
+            </div>
+            <div class="module compact">
+              <div class="module-title"><span class="module-icon">↔</span><div><b>스테레오 이미지</b><small>좌우 공간의 너비를 조절합니다</small></div></div>
+              <label class="single-slider"><span>MONO</span><input id="width" type="range" min="0" max="150" value="100"><span>WIDE</span><output id="widthOut">100%</output></label>
+            </div>
+            <div class="module compact">
+              <div class="module-title"><span class="module-icon">∿</span><div><b>새추레이션</b><small>자연스러운 질감과 밀도를 더합니다</small></div></div>
+              <label class="single-slider"><span>CLEAN</span><input id="saturation" type="range" min="0" max="100" value="12"><span>RICH</span><output id="saturationOut">12%</output></label>
+            </div>
+            <div class="module limiter">
+              <div class="module-title"><span class="module-icon">▥</span><div><b>최종 음압</b><small>피크를 보호하며 전체 레벨을 높입니다</small></div></div>
+              <label><span>TARGET LEVEL</span><select id="target"><option value="-14">-14 LUFS · Streaming</option><option value="-12">-12 LUFS · Loud</option><option value="-9">-9 LUFS · Club</option></select></label>
+              <label><span>CEILING</span><output id="ceilingOut">-1.0 dB</output><input id="ceiling" type="range" min="-2" max="-0.1" step="0.1" value="-1"></label>
+            </div>
+          </div>
+        </div>
+
+        <aside class="result-panel">
+          <p class="section-label" id="resultLabel">EXPECTED RESULT</p><h2>마스터 결과</h2>
+          <div class="meter-card"><div class="meter-readout"><div><small id="lufsLabel">목표 음압</small><strong id="lufs">-14.0 <em>LUFS-I</em></strong></div><span id="levelState">TARGET</span></div><div class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="meter-scale"><span>-24</span><span>-18</span><span>-12</span><span>-6</span><span>0</span></div></div>
+          <dl class="stats"><div><dt>PEAK</dt><dd id="peak">-1.0 dB</dd></div><div><dt>DYNAMIC RANGE</dt><dd id="dynamic">8.4 dB</dd></div><div><dt>STEREO WIDTH</dt><dd id="stereoStat">100%</dd></div></dl>
+          <div class="result-copy"><b>이 설정의 결과</b><p id="resultText">원본의 균형을 유지하면서 전체 음량을 고르게 정리합니다. 스트리밍 서비스에 적합한 안정적인 마스터입니다.</p></div>
+          <p class="process-status" id="processStatus" role="status" aria-live="polite">WAV 파일을 불러오면 원본을 분석합니다.</p>
+          <button class="master-button" id="masterButton" disabled><span id="masterButtonText">파일을 먼저 선택하세요</span><i>→</i></button>
+          <small class="export-note">WAV · 24-bit · 원본 샘플레이트로 내보내기</small>
+        </aside>
+      </div>
+    </section>
+
+    <section class="guide" id="guide"><p class="section-label">HOW IT WORKS</p><h2>마스터링은 이렇게 완성됩니다.</h2><div><article><span>01</span><h3>파일을 불러오세요</h3><p>완성된 믹스 WAV를 선택하면 브라우저가 오디오를 안전하게 분석합니다.</p></article><article><span>02</span><h3>원하는 톤을 만드세요</h3><p>프리셋에서 시작해 톤, 밀도, 공간감과 최종 음압을 세밀하게 조절하세요.</p></article><article><span>03</span><h3>비교하고 저장하세요</h3><p>원본과 결과를 들어본 뒤 24-bit WAV 파일로 바로 다운로드하세요.</p></article></div></section>
+  </main>
+  <footer><a class="brand" href="#"><span class="brand-mark">M</span><span>mastering<span>.wav</span></span></a><p>음악은 그대로, 완성도는 한 단계 더.</p><small>© 2026 mastering.wav · Audio stays in your browser.</small></footer>
+  <script src="app.js"></script>
+</body>
+</html>
